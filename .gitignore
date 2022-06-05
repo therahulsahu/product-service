@@ -1,0 +1,5 @@
+.project
+.idea/
+target/
+.settings
+.DS_Store
