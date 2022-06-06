@@ -1,0 +1,6 @@
+spring:
+  couchbase:
+    connection-string: "127.0.0.1"
+    user-name: "rahul"
+    password: "admin@123"
+    bucket-name: "product"
