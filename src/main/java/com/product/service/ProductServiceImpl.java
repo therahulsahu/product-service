@@ -41,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
 		try {
 			productRepository.saveAll(productList);
 			productList.forEach(product -> kafkaTemplate.send(TOPIC, product));
+			System.out.println("Published to topic : " + TOPIC);
 		}
 		catch (IllegalArgumentException e) {
 			// In case the given entities or any of the entities is null.
