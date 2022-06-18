@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,15 @@ public class ProductServiceImpl implements ProductService {
 	
 	@Autowired
 	ProductRepository productRepository;
+
+	@Autowired
+	KafkaTemplate<String, Product> kafkaTemplate;
+
+	private static final String TOPIC = "product_topic";
 	
 	public List<Product> getProductList() {
 		List<Product> products = productRepository.findAll();
-		if(products.size() == 0) {
+		if(products.isEmpty()) {
 			Product product1 = new Product("1", "Apple Iphone 13", "60000", "128GB storage, 8GB Ram", "10", false);
 			Product product2 = new Product("2", "Samsung Galaxy S21", "50000", "256GB storage, 8GB Ram", "10", false);
 			Product product3 = new Product("3", "VIVO V9 Pro", "45000", "128GB storage, 6GB Ram", "12", false);
@@ -34,6 +40,7 @@ public class ProductServiceImpl implements ProductService {
 	public boolean createProducts(List<Product> productList) {
 		try {
 			productRepository.saveAll(productList);
+			productList.forEach(product -> kafkaTemplate.send(TOPIC, product));
 		}
 		catch (IllegalArgumentException e) {
 			// In case the given entities or any of the entities is null.
