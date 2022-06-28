@@ -1,5 +1,6 @@
 package com.product.controller;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,16 +8,12 @@ import java.util.Map;
 import com.product.model.Product;
 import com.product.model.ProductResponse;
 import com.product.model.UserBean;
+import com.product.service.ReportService;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.product.service.ProductService;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -25,6 +22,9 @@ public class ProductController {
 	
 	@Autowired
 	ProductService productService;
+
+	@Autowired
+	ReportService reportService;
 
 	@GetMapping("/getlist")
 	public List<Product> getlist() {
@@ -78,6 +78,11 @@ public class ProductController {
 			// show same login page
 			return userBean;
 		}
+	}
+
+	@GetMapping("/generateReport/{format}")
+	public String generateReport(@PathVariable String format) throws JRException, FileNotFoundException {
+		return reportService.exportReport(format);
 	}
 
 	// single product
