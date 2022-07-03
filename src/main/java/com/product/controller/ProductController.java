@@ -1,6 +1,12 @@
 package com.product.controller;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +17,11 @@ import com.product.model.UserBean;
 import com.product.service.ReportService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.product.service.ProductService;
@@ -83,6 +94,33 @@ public class ProductController {
 	@GetMapping("/generateReport/{format}")
 	public String generateReport(@PathVariable String format) throws JRException, FileNotFoundException {
 		return reportService.exportReport(format);
+	}
+
+	@GetMapping("/download")
+	public ResponseEntity<Resource> download() throws IOException, JRException {
+
+//		reportService.exportReport("pdf");
+
+		File file = new File("products.pdf");
+		String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+		if (mimeType == null) {
+			mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+		}
+
+		HttpHeaders header = new HttpHeaders();
+		header.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", file.getName()));
+		header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+		header.add("Pragma", "no-cache");
+		header.add("Expires", "0");
+
+		Path path = Paths.get(file.getAbsolutePath());
+		ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+
+		return ResponseEntity.ok()
+				.headers(header)
+				.contentLength(file.length())
+				.contentType(MediaType.valueOf(mimeType))
+				.body(resource);
 	}
 
 	// single product

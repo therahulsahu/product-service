@@ -25,11 +25,11 @@ public class ReportService {
 
     public String exportReport(String reportFormat) throws FileNotFoundException, JRException {
         String path = "";
-        List<Product> employees = repository.findAll();
+        List<Product> products = repository.findAll();
         //load file and compile it
         File file = ResourceUtils.getFile("classpath:products.jrxml");
         JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(employees);
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(products);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("createdBy", "Jasper Reports");
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
@@ -39,6 +39,6 @@ public class ReportService {
         if (reportFormat.equalsIgnoreCase("pdf")) {
             JasperExportManager.exportReportToPdfFile(jasperPrint, "products.pdf");
         }
-        return "report generated in path : " + path;
+        return "report generated";
     }
 }
