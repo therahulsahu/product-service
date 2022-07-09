@@ -3,10 +3,8 @@ package com.product.controller;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URLConnection;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +15,15 @@ import com.product.model.UserBean;
 import com.product.service.ReportService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.product.service.ProductService;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -97,29 +96,22 @@ public class ProductController {
 	}
 
 	@GetMapping("/download")
-	public ResponseEntity<Resource> download() throws IOException, JRException {
+	public ResponseEntity<Resource> download(HttpServletResponse res) throws IOException, JRException {
 
-//		reportService.exportReport("pdf");
+		reportService.exportReport("pdf");
 
-		File file = new File("products.pdf");
-		String mimeType = URLConnection.guessContentTypeFromName(file.getName());
-		if (mimeType == null) {
-			mimeType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+		Resource resource;
+		File file;
+		try {
+			file = new File("products.pdf");
+			resource = new UrlResource(file.toURI());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException("Error: " + e.getMessage());
 		}
 
-		HttpHeaders header = new HttpHeaders();
-		header.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", file.getName()));
-		header.add("Cache-Control", "no-cache, no-store, must-revalidate");
-		header.add("Pragma", "no-cache");
-		header.add("Expires", "0");
-
-		Path path = Paths.get(file.getAbsolutePath());
-		ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-
 		return ResponseEntity.ok()
-				.headers(header)
-				.contentLength(file.length())
-				.contentType(MediaType.valueOf(mimeType))
+				.header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(file.toPath()))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
 				.body(resource);
 	}
 
