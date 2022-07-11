@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.product.client.EmailNotificationClient;
+import com.product.model.EmailDetails;
 import com.product.model.Product;
 import com.product.model.ProductResponse;
 import com.product.model.UserBean;
@@ -26,6 +28,9 @@ public class ProductController {
 	@Autowired
 	ProductService productService;
 
+	@Autowired
+	EmailNotificationClient emailNotificationClient;
+
 	@GetMapping("/getlist")
 	public List<Product> getlist() {
 		System.out.println("Get list called");
@@ -39,6 +44,15 @@ public class ProductController {
 		boolean res = productService.createProducts(productRequest);
 		if(res) {
 			map.put("response", "Successfully product created");
+			EmailDetails emailDetails = new EmailDetails();
+			emailDetails.setRecipient("therahulsahu7@gmail.com");
+			emailDetails.setSubject("Product Spring App - New Product Created");
+			emailDetails.setMsgBody("A new product - " + productRequest.get(0).getProductName() + " has been created.");
+			try{
+				emailNotificationClient.sendMail(emailDetails);
+			} catch (Exception e) {
+				System.out.println("Email Notification service might be down !");
+			}
 		} else {
 			map.put("response", "Products not created");
 		}
