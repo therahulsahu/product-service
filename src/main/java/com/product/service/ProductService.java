@@ -9,4 +9,5 @@ public interface ProductService {
 	boolean createProducts(List<Product> productList);
 	boolean deleteProducts(List<Product> productList);
 	long getProductsCount();
+	public boolean updateProduct(Product updatedProduct);
 }

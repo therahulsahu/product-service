@@ -1,6 +1,7 @@
 package com.product.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,6 +52,40 @@ public class ProductServiceImpl implements ProductService {
 			return false;
 		}
 		return true;
+	}
+
+	public boolean updateProduct(Product updatedProduct) {
+		Optional<Product> optionalProduct = productRepository.findById(updatedProduct.getProductId());
+		if(optionalProduct.isEmpty()) {
+			System.out.println("No product found with id : " + updatedProduct.getProductId());
+			return false;
+		}
+
+		Product currentProduct = optionalProduct.get();
+		copyProductProperties(currentProduct, updatedProduct);
+		productRepository.save(currentProduct);
+		return true;
+	}
+
+	private void copyProductProperties(Product productA, Product productB) {
+		if(productB.getProductName() != null) {
+			productA.setProductName(productB.getProductName());
+		}
+		if(productB.getProductPrice() != null) {
+			productA.setProductPrice(productB.getProductPrice());
+		}
+		if(productB.getProductDesc() != null) {
+			productA.setProductDesc(productB.getProductDesc());
+		}
+		if(productB.getProductQuantity() != null) {
+			productA.setProductQuantity(productB.getProductQuantity());
+		}
+		if(productB.getProductType() != null) {
+			productA.setProductType(productB.getProductType());
+		}
+		if(productB.getProductmul() != null) {
+			productA.setProductmul(productB.getProductmul());
+		}
 	}
 	
 	public long getProductsCount() {
